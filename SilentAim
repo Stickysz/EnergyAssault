@@ -1,0 +1,117 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local fov = 180
+local hitpart = "Head"
+local isSilentAimEnabled = false
+
+-- Simple GUI for FOV and Silent Aim toggle
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = localPlayer.PlayerGui
+screenGui.ResetOnSpawn = false  -- Keep GUI even after respawn
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 160)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.Parent = screenGui
+
+-- Silent Aim Toggle Button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 180, 0, 30)
+toggleButton.Position = UDim2.new(0, 10, 0, 10)
+toggleButton.Text = "Silent Aim: OFF"
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 16
+toggleButton.Parent = frame
+
+toggleButton.MouseButton1Click:Connect(function()
+    isSilentAimEnabled = not isSilentAimEnabled
+    toggleButton.BackgroundColor3 = isSilentAimEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    toggleButton.Text = isSilentAimEnabled and "Silent Aim: ON" or "Silent Aim: OFF"
+end)
+
+-- FOV Label
+local fovLabel = Instance.new("TextLabel")
+fovLabel.Size = UDim2.new(0, 180, 0, 30)
+fovLabel.Position = UDim2.new(0, 10, 0, 50)
+fovLabel.Text = "FOV: " .. fov
+fovLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+fovLabel.BackgroundTransparency = 1
+fovLabel.Font = Enum.Font.Gotham
+fovLabel.TextSize = 16
+fovLabel.Parent = frame
+
+-- FOV Input Box
+local fovInput = Instance.new("TextBox")
+fovInput.Size = UDim2.new(0, 180, 0, 30)
+fovInput.Position = UDim2.new(0, 10, 0, 80)
+fovInput.PlaceholderText = "Enter FOV"
+fovInput.Text = tostring(fov)
+fovInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+fovInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+fovInput.Font = Enum.Font.Gotham
+fovInput.TextSize = 16
+fovInput.Parent = frame
+
+-- Apply FOV Button
+local applyButton = Instance.new("TextButton")
+applyButton.Size = UDim2.new(0, 180, 0, 30)
+applyButton.Position = UDim2.new(0, 10, 0, 120)
+applyButton.Text = "Apply FOV"
+applyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyButton.Font = Enum.Font.GothamBold
+applyButton.TextSize = 16
+applyButton.Parent = frame
+
+-- Invalid FOV Message
+local invalidFovMessage = Instance.new("TextLabel")
+invalidFovMessage.Size = UDim2.new(0, 180, 0, 20)
+invalidFovMessage.Position = UDim2.new(0, 10, 0, 150)
+invalidFovMessage.Text = ""
+invalidFovMessage.TextColor3 = Color3.fromRGB(255, 0, 0)
+invalidFovMessage.BackgroundTransparency = 1
+invalidFovMessage.Font = Enum.Font.Gotham
+invalidFovMessage.TextSize = 14
+invalidFovMessage.TextXAlignment = Enum.TextXAlignment.Center
+invalidFovMessage.Parent = frame
+
+applyButton.MouseButton1Click:Connect(function()
+    local inputFov = tonumber(fovInput.Text)
+    if inputFov and inputFov >= 50 and inputFov <= 180 then
+        fov = inputFov
+        fovLabel.Text = "FOV: " .. fov
+        invalidFovMessage.Text = ""  -- Clear invalid message if FOV is valid
+    else
+        invalidFovMessage.Text = "Invalid FOV. Only 50-180 allowed."
+    end
+end)
+
+-- Silent Aim logic
+local rotation = CFrame.Angles(0, math.pi * 0.5, 0)
+
+local old
+old = hookmetamethod(workspace, "__newindex", function(self, index, value)
+    if index == "CFrame" and debug.info(3, "n") == "firebullet" and isSilentAimEnabled then
+        local closest = math.rad(fov)
+        local origin, direction = value.Position, value.LookVector
+
+        for _, player in ipairs(Players:GetPlayers()) do
+            local character, team = player.Character, player.Team
+            if character and team ~= localPlayer.Team then
+                local targetPart = character:FindFirstChild(hitpart)
+                if targetPart then
+                    local cframe = CFrame.new(origin, targetPart.Position) * rotation
+                    local angle = math.acos(direction:Dot(cframe.LookVector))
+
+                    if angle < closest then
+                        value = cframe
+                        closest = angle
+                    end
+                end
+            end
+        end
+    end
+    return old(self, index, value)
+end)
