@@ -1,0 +1,82 @@
+-- Variables
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Function to determine if a player is an enemy
+local function isEnemy(player)
+    if not player.Team or not LocalPlayer.Team then
+        return true -- Treat neutral players as enemies
+    end
+    return player.Team ~= LocalPlayer.Team
+end
+
+-- Function to create ESP for a character
+local function createESP(character)
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+
+    -- Create Highlight for outlines visible through walls
+    if not character:FindFirstChild("Highlight") then
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "Highlight"
+        highlight.Adornee = character
+        highlight.FillTransparency = 1 -- Transparent fill
+        highlight.OutlineTransparency = 0 -- Fully visible outline
+        highlight.OutlineColor = Color3.new(0, 1, 0) -- Green color
+        highlight.Parent = character
+    end
+
+    -- Create Tracer
+    if not character:FindFirstChild("Tracer") then
+        local tracer = Instance.new("Beam")
+        tracer.Name = "Tracer"
+
+        -- Attachments for the tracer
+        local attachment0 = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local attachment1 = character:FindFirstChild("HumanoidRootPart")
+
+        if attachment0 and attachment1 then
+            local tracerAttachment0 = Instance.new("Attachment", attachment0)
+            local tracerAttachment1 = Instance.new("Attachment", attachment1)
+
+            tracer.Attachment0 = tracerAttachment0
+            tracer.Attachment1 = tracerAttachment1
+            tracer.Color = ColorSequence.new(Color3.new(0, 0, 0)) -- Black color
+            tracer.Width0 = 0.05
+            tracer.Width1 = 0.05
+            tracer.FaceCamera = true
+            tracer.Parent = character
+        end
+    end
+end
+
+-- Function to handle player respawn
+local function onCharacterAdded(character)
+    local player = Players:GetPlayerFromCharacter(character)
+    if player and isEnemy(player) then
+        createESP(character)
+    end
+end
+
+-- Function to update ESP for all enemies
+local function updateESP()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and isEnemy(player) then
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                createESP(player.Character)
+            else
+                player.CharacterAdded:Connect(onCharacterAdded)
+            end
+        end
+    end
+end
+
+-- Handle local player respawn
+LocalPlayer.CharacterAdded:Connect(function()
+    RunService.RenderStepped:Connect(updateESP)
+end)
+
+-- Start ESP updates
+RunService.RenderStepped:Connect(updateESP)
