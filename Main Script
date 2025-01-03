@@ -1,0 +1,114 @@
+-- Create a function to create the GUI
+local function createGui()
+    -- Create Screen GUI
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "StickyszScriptGUI"
+    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    -- Create Frame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 240)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -120)
+    frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    frame.Active = true
+    frame.Draggable = true -- Make the frame draggable
+    frame.Parent = screenGui
+
+    -- Add UICorner to Frame
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 10)
+    uiCorner.Parent = frame
+
+    -- Create Title Label
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0, 30)
+    titleLabel.Position = UDim2.new(0, 0, 0, 0)
+    titleLabel.Text = "Stickysz Script"
+    titleLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.TextSize = 20
+    titleLabel.Parent = frame
+
+    -- Add UICorner to Title Label
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, 10)
+    titleCorner.Parent = titleLabel
+
+    -- Create Close Button
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -40, 0, 0)
+    closeButton.Text = "X"
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.SourceSansBold
+    closeButton.TextSize = 20
+    closeButton.Parent = frame
+
+    -- Add UICorner to Close Button
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 10)
+    closeCorner.Parent = closeButton
+
+    -- Close Button Functionality
+    closeButton.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+
+    -- Create Silent Aim Button
+    local silentAimButton = Instance.new("TextButton")
+    silentAimButton.Size = UDim2.new(0, 260, 0, 50)
+    silentAimButton.Position = UDim2.new(0, 20, 0, 50)
+    silentAimButton.Text = "Activate Silent Aim"
+    silentAimButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    silentAimButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    silentAimButton.Font = Enum.Font.SourceSansBold
+    silentAimButton.TextSize = 20
+    silentAimButton.Parent = frame
+
+    -- Add UICorner to Silent Aim Button
+    local silentAimCorner = Instance.new("UICorner")
+    silentAimCorner.CornerRadius = UDim.new(0, 10)
+    silentAimCorner.Parent = silentAimButton
+
+    -- Silent Aim Button Functionality
+    silentAimButton.MouseButton1Click:Connect(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Stickysz/EnergyAssault/refs/heads/main/SilentAim"))()
+    end)
+
+    -- Create ESP Button
+    local espButton = Instance.new("TextButton")
+    espButton.Size = UDim2.new(0, 260, 0, 50)
+    espButton.Position = UDim2.new(0, 20, 0, 120)
+    espButton.Text = "Activate ESP"
+    espButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    espButton.Font = Enum.Font.SourceSansBold
+    espButton.TextSize = 20
+    espButton.Parent = frame
+
+    -- Add UICorner to ESP Button
+    local espCorner = Instance.new("UICorner")
+    espCorner.CornerRadius = UDim.new(0, 10)
+    espCorner.Parent = espButton
+
+    -- ESP Button Functionality
+    espButton.MouseButton1Click:Connect(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Stickysz/EnergyAssault/refs/heads/main/ESP"))()
+    end)
+
+    return screenGui
+end
+
+-- Initial GUI creation
+local gui = createGui()
+
+-- Ensure the GUI persists after death
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+    -- Wait for the player to respawn, then re-create the GUI
+    wait(1) -- Wait for the player to respawn fully
+    if not gui.Parent then
+        gui = createGui()
+    end
+end)
