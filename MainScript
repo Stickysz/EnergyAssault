@@ -1,3 +1,6 @@
+-- Variable to track if the GUI is closed
+local guiClosed = false
+
 -- Create a function to create the GUI
 local function createGui()
     -- Create Screen GUI
@@ -53,6 +56,7 @@ local function createGui()
 
     -- Close Button Functionality
     closeButton.MouseButton1Click:Connect(function()
+        guiClosed = true -- Mark the GUI as closed
         screenGui:Destroy()
     end)
 
@@ -104,11 +108,10 @@ end
 -- Initial GUI creation
 local gui = createGui()
 
--- Ensure the GUI persists after death
+-- Ensure the GUI persists after death unless it was closed
 game.Players.LocalPlayer.CharacterAdded:Connect(function()
-    -- Wait for the player to respawn, then re-create the GUI
     wait(1) -- Wait for the player to respawn fully
-    if not gui.Parent then
+    if not guiClosed and (not gui or not gui.Parent) then
         gui = createGui()
     end
 end)
